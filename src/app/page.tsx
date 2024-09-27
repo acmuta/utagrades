@@ -1,4 +1,18 @@
 import Head from "next/head";
+import {Poppins, Montserrat} from 'next/font/google';
+
+const poppins = Poppins({
+  subsets: ['latin'],
+  weight: ['400', '700'], // Specify weights you need
+  variable: '--font-poppins',
+});
+
+const montserrat = Montserrat({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  variable: '--font-montserrat',
+});
+
 export default function Home() {
   return (
     <>
@@ -7,8 +21,8 @@ export default function Home() {
       </Head>
       <div className="flex flex-col justify-center items-center h-screen bg-gray-100 font-serif">
         <h1 className="text-4xl mb-4 tracking-wide">
-          <span className="font-poppins text-bold"> UTA </span>
-          <span className="font-montserrat font-normal"> GRADES</span>
+          <span className={`${poppins.className} font-bold`}> UTA </span>
+          <span className={`${montserrat.className} font-normal`}> GRADES</span>
         
         </h1>
         <p className="text-xl text-center text-gray-600 mb-4">
