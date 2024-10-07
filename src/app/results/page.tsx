@@ -3,20 +3,16 @@ import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import SearchBar from '../components/SearchBar';
 import BarChart from '../components/BarChart';
-import SideBar from '../components/SideBar';
-import { IoHomeOutline } from 'react-icons/io5';
-import {Poppins, Montserrat} from 'next/font/google';
+import { IoHomeOutline } from "react-icons/io5";
+import { Poppins, Montserrat } from 'next/font/google';
 
-
-const poppins = Poppins({
-  subsets: ['latin'],
-  weight: ['400', '700'], // Specify weights you need
-  variable: '--font-poppins',
-});
 const montserrat = Montserrat({
+  weight: ['400', '600'],
   subsets: ['latin'],
-  weight: ['400', '700'],
-  variable: '--font-montserrat',
+});
+const poppins = Poppins({
+  weight: ['400', '600'],  
+  subsets: ['latin'],     
 });
 
 const ResultsPage = () => {
@@ -105,32 +101,123 @@ const ResultsPage = () => {
       ) : (
         <div className="flex">
           {/* Sidebar */}
-          <SideBar
-            professors={professors}
-            selectedProfessor={selectedProfessor}
-            setSelectedProfessor={handleProfessorClick}
-            years={years}
-            selectedYear={selectedYear}
-            setSelectedYear={setSelectedYear}
-            semesters={semesters}
-            selectedSemester={selectedSemester}
-            setSelectedSemester={setSelectedSemester}
-            finalFilteredCourses={finalFilteredCourses}
-            selectedSection={selectedSection}
-            setSelectedSection={setSelectedSection}
-          />
+          <div className="w-1/3 pr-4 mt-10">
+            {selectedProfessor ? (
+              <div>
+                <h2 className="text-lg font-semibold mb-2">{`Courses for Professor: ${selectedProfessor}`}</h2>
+
+                {/* Year Dropdown */}
+                <div className="mb-4">
+                  <label htmlFor="year" className="block font-semibold mb-1">Select Year:</label>
+                  <select
+                    id="year"
+                    value={selectedYear || ""}
+                    onChange={(e) => setSelectedYear(e.target.value)}
+                    className="border p-2 rounded-lg w-full"
+                  >
+                    <option value="" disabled>Select a year</option>
+                    {years.map((year, index) => (
+                      <option key={index} value={year}>{year}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Semester Dropdown */}
+                <div className="mb-4">
+                  <label htmlFor="semester" className="block font-semibold mb-1">Select Semester:</label>
+                  <select
+                    id="semester"
+                    value={selectedSemester || ""}
+                    onChange={(e) => setSelectedSemester(e.target.value)}
+                    className="border p-2 rounded-lg w-full"
+                  >
+                    <option value="" disabled>Select a semester</option>
+                    {semesters.map((semester, index) => (
+                      <option key={index} value={semester}>{semester}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Section List */}
+                <ul className="space-y-2">
+                  {finalFilteredCourses.map((course, index) => (
+                    <li
+                      key={index}
+                      onClick={() => setSelectedSection(course)}
+                      className={`border p-2 rounded-lg shadow-sm cursor-pointer ${selectedSection?.section_number === course.section_number ? 'bg-blue-100' : ''}`}
+                    >
+                      Section: {course.section_number}
+                    </li>
+                  ))}
+                </ul>
+
+                <button
+                  onClick={() => {
+                    setSelectedProfessor(null);
+                    setSelectedYear(null);
+                    setSelectedSemester(null);
+                  }}
+                  className="mt-4 text-blue-500 underline mr-8"
+                >
+                  Back to Professors
+                </button>
+              </div>
+            ) : (
+              <ul className="space-y-4">
+                {professors.map((professor, index) => (
+                  <li
+                    key={index}
+                    className="border p-4 rounded-lg shadow-sm cursor-pointer"
+                    onClick={() => handleProfessorClick(professor)}
+                  >
+                    <h2 className="text-lg font-semibold">{professor}</h2>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
 
           {/* Right content area */}
           <div className="w-2/3 pl-4 mt-16">
             {selectedSection ? (
-              <div className="border p-4 rounded-lg shadow-md h-full">
-                <h2 className="text-2xl font-semibold mb-4">{`${selectedSection.subject_id} ${selectedSection.course_number}`}</h2>
-                <p><strong>Professor:</strong> {selectedSection.instructor1}</p>
+              <div className="flex flex-col border p-4 rounded-lg shadow-md h-full gap-4">
+                <h2 className="text-3xl mt-4 font-extrabold mb-4 text-center text-cyan-500 drop-shadow-md">{`${selectedSection.subject_id} ${selectedSection.course_number}`}</h2>
+                {/* <p><strong>Professor:</strong> {selectedSection.instructor1}</p>
                 <p><strong>Year:</strong> {selectedSection.year}</p>
                 <p><strong>Semester:</strong> {selectedSection.semester}</p>
                 <p><strong>Section:</strong> {selectedSection.section_number}</p>
                 <p><strong>Average GPA:</strong> {selectedSection.course_gpa}</p>
-                <p><strong>Total Students:</strong> {selectedSection.grades_count}</p>
+                <p><strong>Total Students:</strong> {selectedSection.grades_count}</p> */}
+                {<div className='flex flex-col gap-6 mr-0.5 ml-0.5'>
+                    <div className='flex flex-row gap-4 justify-evenly'>
+                      <p className='flex flex-col bg-slate-100 p-3 gap-2 w-1/3 rounded-lg font-bold hover:-translate-y-1 drop-shadow-lg border-t-blue-400 border-t-4 hover:drop-shadow-xl transition-transform ease-in-out duration-300'>
+                        <span className=''>PROFESSOR</span>
+                        <span className='text-blue-500 text-lg'>{selectedSection.instructor1}</span>
+                      </p>
+                      <p className='flex flex-col bg-slate-100 p-3 gap-2 w-1/3 rounded-lg font-bold hover:-translate-y-1 drop-shadow-lg border-t-green-400 border-t-4 hover:drop-shadow-xl transition-transform ease-in-out duration-300'>
+                        <span className=''>YEAR</span>
+                        <span className='text-blue-500 text-lg'>{selectedSection.year}</span>
+                      </p>
+                      <p className='flex flex-col bg-slate-100 p-3 gap-2 w-1/3 rounded-lg font-bold hover:-translate-y-1 drop-shadow-lg border-t-orange-400 border-t-4 hover:drop-shadow-xl transition-transform ease-in-out duration-300'>
+                        <span className=''>SEMESTER</span>
+                        <span className='text-blue-500 text-lg'>{selectedSection.semester}</span>
+                      </p>
+                    </div>
+                    <div className='flex flex-row gap-4 justify-evenly'>
+                    <p className='flex flex-col bg-slate-100 p-3 gap-2 w-1/3 rounded-lg font-bold hover:-translate-y-1 drop-shadow-lg border-t-teal-400 border-t-4 hover:drop-shadow-xl transition-transform ease-in-out duration-300'>
+                        <span className=''>SECTION</span>
+                        <span className='text-blue-500 text-lg'>{selectedSection.section_number}</span>
+                      </p>
+                      <p className='flex flex-col bg-slate-100 p-3 gap-2 w-1/3 rounded-lg font-bold hover:-translate-y-1 drop-shadow-lg border-t-rose-400 border-t-4 hover:drop-shadow-xl transition-transform ease-in-out duration-300'>
+                        <span className=''>AVERAGE GPA</span>
+                        <span className='text-blue-500 text-lg'>{selectedSection.course_gpa}</span>
+                      </p>
+                      <p className='flex flex-col bg-slate-100 p-3 gap-2 w-1/3 rounded-lg font-bold hover:-translate-y-1 drop-shadow-lg border-t-yellow-400 border-t-4 hover:drop-shadow-xl transition-transform ease-in-out duration-300'>
+                        <span className=''>TOTAL STUDENTS</span>
+                        <span className='text-blue-500 text-lg'>{selectedSection.grades_count}</span>
+                      </p>
+                    </div>
+                </div>}
 
                 <div className="mt-8">
                   <BarChart grades={selectedSection} />
