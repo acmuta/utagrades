@@ -1,5 +1,5 @@
 "use client";
-import React from 'react';
+import React, { useEffect } from 'react';
 
 export interface Course {
     subject_id : string;
@@ -62,6 +62,43 @@ const SideBar: React.FC<SideBarProps> = ({
     routeType,
 }) => {
     const selectedProfAndCourse = selectedProfessor && selectedCourse;
+    const [yearChangedByUser, setYearChangedByUser] = React.useState(false);
+    
+    const getLatestSemester = () => {
+        const today = new Date();
+        const currentMonth = today.getMonth() + 1; 
+        const currentDay = today.getDate();
+        let latestSemester = '';
+        if ((currentMonth === 12 && currentDay >= 21) || (currentMonth >= 1 && currentMonth <= 5) || (currentMonth === 5 && currentDay <= 15)) {   
+            latestSemester = 'Fall';
+        } else if ((currentMonth === 5 && currentDay >= 16) || (currentMonth >= 6 && currentMonth <= 8 && currentDay <= 15)) {   
+            latestSemester = 'Spring';
+        } else if ((currentMonth === 8 && currentDay >= 16) || (currentMonth >= 9 && currentMonth <= 12 && currentDay <= 20)) {
+            latestSemester = 'Summer';
+        }
+    
+        return latestSemester;
+    };
+    
+    useEffect(() => {
+        if (!selectedYear && years.length > 0) {
+            setSelectedYear(years[0]);  // Set the first year by default as years is already in decreasing order
+        }
+
+        if (!yearChangedByUser && selectedYear && !selectedSemester) {
+            const previousLatestSemester = getLatestSemester();
+            setSelectedSemester(previousLatestSemester); 
+        }
+    }, [years, selectedYear, selectedSemester, yearChangedByUser, setSelectedYear, setSelectedSemester]);
+
+    // Handles when the year is changed by the user
+    const handleYearChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const selectedYearValue = e.target.value;
+        setSelectedYear(selectedYearValue);
+        setSelectedSection(null);       
+        setSelectedSemester(null);      
+        setYearChangedByUser(true);     
+    };
 
     const handleBackButtonClick = () => {
         if (routeType === "professor") {
@@ -93,11 +130,7 @@ const SideBar: React.FC<SideBarProps> = ({
                         <select
                             id="year"
                             value={selectedYear || ""}
-                            onChange={(e) => {setSelectedYear(e.target.value);
-                                              setSelectedSection(null);
-                                              setSelectedSemester(null)
-                                      }
-                            }
+                            onChange={handleYearChange}
                             className="border p-2 rounded-lg w-full"
                         >
                             <option value="" disabled>
