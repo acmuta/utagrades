@@ -11,9 +11,11 @@ interface Suggestion {
 interface SearchBarProps {
   initialValue?: string;
   resetState?: () => void;
+  resetProf?: () => void;
+  resetCourse?: () => void;
 }
 
-export default function SearchBar({ initialValue = '' , resetState }: SearchBarProps) {
+export default function SearchBar({ initialValue = '' , resetState, resetCourse, resetProf }: SearchBarProps) {
   const [searchInput, setSearchInput] = useState(initialValue);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -53,19 +55,31 @@ export default function SearchBar({ initialValue = '' , resetState }: SearchBarP
   const handleSearch = (suggestion: string) => {
     setSearchInput(suggestion);
     setSuggestions([]);
+    const isProfessor = suggestions.some(s => s.suggestion === suggestion && s.type === 'professor');
+    const queryParam = isProfessor ? `professor=${encodeURIComponent(suggestion)}` : `course=${encodeURIComponent(suggestion)}`;
+    
+    const currentURL = new URL(window.location.href);
+    const currentSearch = currentURL.searchParams.get(isProfessor ? 'professor' : 'course');
+  
+    if (currentSearch === suggestion) {
+      if(isProfessor && resetCourse)
+      {
+        console.log("resetting setSelectedCourse");
+        resetCourse();
+      }
+      else if(resetProf)
+      {
+        console.log("resetting setSelectedProfessor");
+        resetProf();
+      }
+      router.replace(`/results?${queryParam}`);
 
-    if (resetState) {
-      resetState();
-      console.log("resetting");
-    }
-    // console.log("hi");
-    // Check if the suggestion is a professor or a course
-    const isProfessor = suggestions.find(s => s.suggestion === suggestion && s.type === 'professor');
-
-    if (isProfessor) {
-      router.push(`/results?professor=${encodeURIComponent(suggestion)}`); // Redirect to professor results
     } else {
-      router.push(`/results?course=${encodeURIComponent(suggestion)}`); // Redirect to course results
+      if (resetState) {
+        console.log("resetting all values");
+        resetState();
+      }
+      router.push(`/results?${queryParam}`);
     }
   };
 

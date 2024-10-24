@@ -151,6 +151,13 @@ const ResultsContent = () => {
     setCourses([]);
     setCoursesToDisplay([]); 
   };
+
+  const resetProf = () => {
+    setSelectedProfessor(null);
+  };
+  const resetCourse = () => {
+    setSelectedCourse(null);
+  };
   
   
   return (
@@ -191,7 +198,7 @@ const ResultsContent = () => {
         </div>
         {/* SearchBar always at the top */}
         <div className="text-white">
-          <SearchBar initialValue={course || ''} resetState={resetState} />
+          <SearchBar initialValue={course || ''} resetState={resetState} resetCourse={resetCourse} resetProf={resetProf} />
         </div>
 
         {loading ? (
