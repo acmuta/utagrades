@@ -20,6 +20,7 @@
     "clsx": "^2.1.1",
     "csv-parser": "^3.0.0",
     "debounce": "^2.1.1",
+    "isomorphic-dompurify": "^2.16.0",
     "lodash": "^4.17.21",
     "lodash.debounce": "^4.0.8",
     "lru-cache": "^11.0.1",

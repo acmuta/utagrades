@@ -99,9 +99,10 @@ const StatsCard = ({ selectedItems }: { selectedItems: Map<string, any> }) => {
                   </div>
                )}
                <h2 className="text-2xl sm:text-3xl mt-4 font-extrabold mb-1 text-center text-white drop-shadow-md">
-               {aggregatedData[0]?.subject_id && aggregatedData[0]?.course_number
-                  ? `${aggregatedData[0].subject_id} ${aggregatedData[0].course_number} ${aggregatedData[0].course_title ? aggregatedData[0].course_title : ''}`
-                  : "Course Information"}
+                  {aggregatedData[0]?.subject_id &&
+                  aggregatedData[0]?.course_number
+                     ? `${aggregatedData[0].subject_id} ${aggregatedData[0].course_number}`
+                     : "Course Information"}
                </h2>
                <div className="border-b-4 rounded border-gray-500 w-1/2 mx-auto mb-3 px-10"></div>{" "}
                {/* Render differently depending on the number of items */}

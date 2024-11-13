@@ -53,61 +53,57 @@ const FAQs = [
 ];
 
 const FAQPage = () => {
-    return (
-      <div className="max-w-2xl mx-auto p-6">
-        <div className="absolute top-6 left-30 flex justify-between items-center mb-8">
-            <IoHomeOutline
-              onClick={() => (window.location.href = "/")}
-              className="text-2xl cursor-pointer ml-4 mt-1 text-gray-300"
-              aria-label="Home"
-            />
-        </div>
-        <div>
-            <div className="flex flex-col items-center w-full mb-10 ">
-              <h1 className="text-2xl font-montserrat text-center">
-                <span className={`${poppins.className} font-bold text-gray-300`}>
-                  MAV
-                </span>
-                <span className={`${montserrat.className} font-normal text-gray-300`}>
-                  GRADES
-                </span>
-              </h1>
-            </div>
-        </div>
-        <h1 className="text-2xl font-bold mb-10 text-center">
-          <span className={`${poppins.className} font-bold text-gray-300`}>
-            Frequently Asked Questions
-          </span>
-        </h1>
-        <div className="space-y-4">
-          {FAQs.map((faq, index) => (
-            <FAQDropdown
-              key={index}
-              question={faq.question}
-              answer={faq.answer}
-            />
-          ))}
-        </div>
-        
-        <div className="mt-10 bottom-0 left-0 right-0 text-center text-xs text-gray-400 p-4">
-            Developed by{" "}
-            <a
-               href="https://github.com/acmuta/mavgrades"
-               target="_blank"
-               className="hover:underline"
-            >
-               ACM @ UTA
-            </a>
-            . Not affiliated with or sponsored by UT Arlington.
-            <br />© 2024{" "}
-            <a href="https://acmuta.com" className="hover:underline">
-               ACM @ UT Arlington
-            </a>
-            . All rights reserved.
-         </div>
+  return (
+    <div className="max-w-3xl mx-auto px-6 py-10">
+      {/* Home Icon */}
+      <div className="absolute top-6 left-6">
+        <IoHomeOutline
+          onClick={() => (window.location.href = "/")}
+          className="text-3xl cursor-pointer text-gray-300 hover:text-gray-100 transition-colors duration-200"
+          aria-label="Home"
+        />
       </div>
-    );
-  };
-  
-  export default FAQPage;
-  
+
+      {/* Logo */}
+      <div className="flex flex-col items-center mb-12">
+        <h1 className="text-4xl font-bold text-gray-300">
+          <span className={`${poppins.className} font-bold`}>MAV</span>
+          <span className={`${montserrat.className} font-normal ml-2`}>GRADES</span>
+        </h1>
+      </div>
+
+      {/* Page Title */}
+      <h2 className={`${poppins.className} text-3xl font-bold text-center text-gray-300 mb-8`}>
+        Frequently Asked Questions
+      </h2>
+
+      {/* FAQ Items */}
+      <div className="space-y-6">
+        {FAQs.map((faq, index) => (
+          <FAQDropdown key={index} question={faq.question} answer={faq.answer} />
+        ))}
+      </div>
+
+      {/* Footer */}
+      <div className="mt-16 text-center text-xs text-gray-400">
+        Developed by{" "}
+        <a
+          href="https://github.com/acmuta/mavgrades"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hover:underline"
+        >
+          ACM @ UTA
+        </a>
+        . Not affiliated with or sponsored by UT Arlington.
+        <br />© {new Date().getFullYear()}{" "}
+        <a href="https://acmuta.com" target="_blank" rel="noopener noreferrer" className="hover:underline">
+          ACM @ UT Arlington
+        </a>
+        . All rights reserved.
+      </div>
+    </div>
+  );
+};
+
+export default FAQPage;

@@ -1,46 +1,45 @@
 import { useState } from "react";
+import DOMPurify from "isomorphic-dompurify";
 
 interface FAQDropdownProps {
-   question: string;
-   answer: string;
+  question: string;
+  answer: string;
 }
 
 const FAQDropdown: React.FC<FAQDropdownProps> = ({ question, answer }) => {
-   const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
-   const toggleDropdown = () => {
-      setIsOpen((prev) => !prev);
-   };
+  const toggleDropdown = () => {
+    setIsOpen((prev) => !prev);
+  };
 
-   return (
-      <div className="border-gray-200">
-         <button
-            className={`flex justify-between items-center w-full py-4 text-left text-white focus:outline-none bg-gray-200 ${
-               isOpen ? "bg-opacity-40" : "bg-opacity-20"
-            } rounded-t-lg hover:bg-opacity-40 transition-all duration-200 ${
-               isOpen ? "" : "rounded-b-lg"
-            }`}
-            onClick={toggleDropdown}
-         >
-            <span className="ml-5 mr-5 text-lg font-medium">{question}</span>
-            <span
-               className={`mr-5 transition-transform ${
-                  isOpen ? "rotate-180" : ""
-               }`}
-            >
-               ▼
-            </span>
-         </button>
-         {isOpen && (
-            <div className="py-2 text-white bg-gray-200 bg-opacity-20 rounded-b-lg">
-               <div
-                  className="ml-5 mr-5"
-                  dangerouslySetInnerHTML={{ __html: answer }}
-               />
-            </div>
-         )}
-      </div>
-   );
+  // Sanitize the answer content
+  const sanitizedAnswer = DOMPurify.sanitize(answer);
+
+  return (
+    <div className="border border-gray-700 rounded-lg overflow-hidden">
+      <button
+        onClick={toggleDropdown}
+        className={`flex justify-between items-center w-full px-6 py-4 text-left text-gray-300 bg-gray-800 hover:bg-gray-700 transition-colors duration-200 ${
+          isOpen ? "rounded-t-lg" : "rounded-lg"
+        }`}
+      >
+        <span className="text-lg font-medium">{question}</span>
+        <span
+          className={`transform transition-transform duration-200 ${
+            isOpen ? "rotate-180" : ""
+          }`}
+        >
+          ▼
+        </span>
+      </button>
+      {isOpen && (
+        <div className="px-6 py-4 bg-gray-900 text-gray-400">
+          <div dangerouslySetInnerHTML={{ __html: sanitizedAnswer }} />
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default FAQDropdown;
