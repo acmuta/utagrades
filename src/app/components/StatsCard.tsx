@@ -98,7 +98,7 @@ const StatsCard = ({ selectedItems }: { selectedItems: Map<string, any> }) => {
                      <GradesInfoCard />
                   </div>
                )}
-               <h2 className="text-2xl sm:text-3xl mt-4 font-extrabold mb-1 text-center text-white drop-shadow-md">
+               <h2 className="text-xl sm:text-2xl mt-4 font-extrabold mb-1 text-center text-white drop-shadow-md">
                {aggregatedData[0]?.subject_id && aggregatedData[0]?.course_number
                   ? `${aggregatedData[0].subject_id} ${aggregatedData[0].course_number} ${aggregatedData[0].course_title ? aggregatedData[0].course_title : ''}`
                   : "Course Information"}
