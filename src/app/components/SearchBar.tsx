@@ -32,14 +32,37 @@ export default function SearchBar({
       setSearchInput(initialValue); // Update input when initialValue changes
    }, [initialValue]);
 
+   // Function to normalize the search input
+   const normalizeSearchInput = (input: string) => {
+      // First, check if the input matches a course pattern (letters followed by numbers)
+      const coursePattern = /^[a-zA-Z]+\d+$/;
+      if (coursePattern.test(input.replace(/\s+/g, ''))) {
+         // Handle course code normalization
+         const noSpaces = input.replace(/\s+/g, '');
+         return noSpaces.replace(/([a-zA-Z]+)(\d+)/i, '$1 $2');
+      }
+
+      // For professor names, normalize spaces and handle concatenated names
+      // This will handle cases like "marnimg" -> "marnim g" or "marnim g" -> "marnim g"
+      const professorPattern = /^[a-zA-Z]+g$/i; // Pattern for names ending with 'g'
+      if (professorPattern.test(input.replace(/\s+/g, ''))) {
+         const noSpaces = input.replace(/\s+/g, '');
+         return noSpaces.replace(/g$/i, ' g');
+      }
+
+      // For all other cases, just normalize spaces
+      return input.replace(/\s+/g, ' ').trim();
+   };
+
    // Create a debounced version of the fetchSuggestions function
    const fetchSuggestions = useRef(
       debounce(async (input: string) => {
-         if (input.length > 1) {
+         if (input.length > 0) {
             setIsLoading(true); // Start loading
             try {
+               const normalizedInput = normalizeSearchInput(input);
                const response = await fetch(
-                  `/api/courses/search?query=${input}`
+                  `/api/courses/search?query=${encodeURIComponent(normalizedInput)}`
                );
                const data = await response.json();
                setSuggestions(data);
@@ -123,11 +146,11 @@ export default function SearchBar({
                placeholder="Search for a course or professor"
                value={searchInput}
                onChange={handleInputChange}
-               onKeyDown={(e) => e.key === 'Enter' && handleSearch(suggestions[0].suggestion)}
+               onKeyDown={(e) => e.key === 'Enter' && suggestions.length > 0 && handleSearch(suggestions[0].suggestion)}
                className="w-full p-3 border border-gray-500 rounded-xl shadow-sm focus:outline-none focus:border-blue-500 bg-white bg-opacity-10"
             />
             <FaSearch 
-               onClick={() => handleSearch(suggestions[0].suggestion)}
+               onClick={() => suggestions.length > 0 && handleSearch(suggestions[0].suggestion)}
                className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-300 w-4 h-4"
             />
          </div>
