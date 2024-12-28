@@ -41,7 +41,6 @@ const StatsCard = ({ selectedItems }: { selectedItems: Map<string, any> }) => {
       value: string | number;
       colorClass: string;
    }) => {
-      // Map the color class to its hex code for text color
       const textColor = tailwindColors[colorClass] || "#FFFFFF";
 
       return (
@@ -233,7 +232,7 @@ const StatsCard = ({ selectedItems }: { selectedItems: Map<string, any> }) => {
                <BarChart grades={aggregatedData} colors={colorClasses} />
             </div>
          ) : (
-            <div className="bg-gray-200 bg-opacity-10 rounded-lg shadow-md p-4 m-4 text-center">
+            <div className="bg-gray-200 bg-opacity-10 rounded-lg shadow-md p-4 text-center">
                <p className="text-white">
                   Select a professor or course to see more information.
                </p>

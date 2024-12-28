@@ -67,36 +67,23 @@ const SideBar: React.FC<SideBarProps> = ({
    selectedItems,
    setSelectedItems,
 }) => {
-   const [openProfessorAccordion, setOpenProfessorAccordion] = useState<
-      number | null
-   >(null);
-   const [openCourseAccordion, setOpenCourseAccordion] = useState<
-      number | null
-   >(null);
+   const [openProfessorAccordion, setOpenProfessorAccordion] = useState<number | null>(null);
+   const [openCourseAccordion, setOpenCourseAccordion] = useState<number | null>(null);
    const [checkboxEnabled, setCheckboxEnabled] = useState(false);
-
-   // State to store whether a checkbox has been checked for a professor/course
-   const [checkboxState, setCheckboxState] = useState<Map<string, boolean>>(
-      new Map()
-   );
-
-   // State to track if selections for year, semester, and section are complete for each professor/course
-   const [isSelectionComplete, setIsSelectionComplete] = useState<
-      Map<string, boolean>
-   >(new Map());
+   const [checkboxState, setCheckboxState] = useState<Map<string, boolean>>(new Map());
+   const [isSelectionComplete, setIsSelectionComplete] = useState<Map<string, boolean>>(new Map());
 
    const handleToggleChange = (enabled: boolean) => {
       setCheckboxEnabled(enabled);
       setSelectedItems(new Map());
-      // Deselect all checkboxes
       setCheckboxState(new Map());
    };
+
    const onToggle = (isEnabled: any) => {
       setCheckboxEnabled(isEnabled);
       handleToggleChange(isEnabled);
    };
 
-   // Function to handle checkbox state
    const handleCheckboxChange = (isChecked: boolean, key: string) => {
       if (isChecked) {
          if (selectedItems.size >= 3) {
@@ -106,15 +93,11 @@ const SideBar: React.FC<SideBarProps> = ({
          const selectionsComplete = isSelectionComplete.get(key);
 
          if (selectionsComplete) {
-            setSelectedItems((prevMap) =>
-               new Map(prevMap).set(key, selectedSection)
-            );
+            setSelectedItems((prevMap) => new Map(prevMap).set(key, selectedSection));
          } else {
-            // Set the value as null if selections are incomplete
             setSelectedItems((prevMap) => new Map(prevMap).set(key, null));
          }
       } else {
-         // Remove the key from the map when unchecked
          setSelectedItems((prevMap) => {
             const newMap = new Map(prevMap);
             newMap.delete(key);
@@ -122,15 +105,12 @@ const SideBar: React.FC<SideBarProps> = ({
          });
       }
 
-      // Store the checkbox state
       setCheckboxState((prevMap) => new Map(prevMap).set(key, isChecked));
    };
 
-   // Effect to update when year, semester, or section changes for a particular professor/course
    useEffect(() => {
       if (selectedProfessor) {
-         const allSelectionsMade =
-            selectedYear && selectedSemester && selectedSection;
+         const allSelectionsMade = selectedYear && selectedSemester && selectedSection;
 
          setIsSelectionComplete((prevMap) =>
             new Map(prevMap).set(selectedProfessor, allSelectionsMade)
@@ -144,14 +124,12 @@ const SideBar: React.FC<SideBarProps> = ({
       }
 
       if (selectedCourse) {
-         const allSelectionsMade =
-            selectedYear && selectedSemester && selectedSection;
+         const allSelectionsMade = selectedYear && selectedSemester && selectedSection;
 
          setIsSelectionComplete((prevMap) =>
             new Map(prevMap).set(selectedCourse, allSelectionsMade)
          );
 
-         // If all selections are made and the course is checked, update the selectedItems map
          if (checkboxState.get(selectedCourse) && allSelectionsMade) {
             setSelectedItems((prevMap) =>
                new Map(prevMap).set(selectedCourse, selectedSection)
@@ -167,10 +145,10 @@ const SideBar: React.FC<SideBarProps> = ({
       checkboxState,
    ]);
 
+   
+
    const toggleProfessorAccordion = (index: number, professor: string) => {
-      setOpenProfessorAccordion(
-         openProfessorAccordion === index ? null : index
-      );
+      setOpenProfessorAccordion(openProfessorAccordion === index ? null : index);
       setSelectedProfessor(professor);
    };
 
@@ -179,128 +157,126 @@ const SideBar: React.FC<SideBarProps> = ({
       setSelectedCourse(course);
    };
 
+
+
    return (
-      <div
-         className="flex flex-col lg:w-1/3 w-full mx-auto pr-2 mt-4 mr-4 lg:mt-10 bg-gray-200 bg-opacity-10 rounded-lg p-2 lg:p-4 min-w-[320px]"
-      >
-         {routeType === "course" && (
-            <div className="align-middle flex mb-4 mt-2 lg:mb-4">
-               <span className="mr-5 text-white text-sm lg:text-base">Compare professors</span>
-               <ToggleSwitch isEnabled={checkboxEnabled} onToggle={onToggle} />
-            </div>
-         )}
-
+      <div className="flex flex-col lg:w-1/3 w-full mx-auto mt-4 mr-4 lg:mt-10 bg-gray-200 bg-opacity-10 rounded-lg min-w-[320px] overflow-hidden"> 
          {routeType === "course" ? (
-            <ul className="space-y-2 lg:space-y-4">
-               {professors.map((professor, index) => (
-                  <li
-                     key={index}
-                     className="p-4 rounded-lg shadow-sm cursor-pointer bg-gray-200 bg-opacity-10"
-                     onClick={() =>
-                        toggleProfessorAccordion(index, professor)
-                     }
-                  >
-                     <div className="flex items-center">
-                        {checkboxEnabled && (
-                           <input
-                              type="checkbox"
-                              className="mr-2"
-                              disabled={!checkboxEnabled}
-                              checked={checkboxState.get(professor) || false}
-                              onChange={(e) => {
-                                 handleCheckboxChange(
-                                    e.target.checked,
-                                    professor
-                                 );
-                                 toggleProfessorAccordion(index, professor);
-                              }}
-                           />
+            <div className=" z-10 px-4 pt-4 sticky top-0">
+               <div className="align-middle flex mb-4">
+                  <span className="mr-5 text-white text-sm lg:text-base">Compare professors</span>
+                  <ToggleSwitch isEnabled={checkboxEnabled} onToggle={onToggle} />
+               </div>
+            </div>
+         ) : (
+            <div className="pt-4" />
+         )}
+      
+         <div className={`overflow-y-auto px-4 pb-4 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-transparent ${
+            selectedItems.size > 0 
+               ? 'h-[calc(100vh-240px)]'
+               : 'max-h-[calc(100vh-240px)]'
+         }`}>
+            {routeType === "course" ? (
+               <ul className="space-y-2 lg:space-y-4">
+                  {professors.slice().sort((a, b) => a.localeCompare(b)).map((professor, index) => (
+                     <li
+                        key={index}
+                        className="p-4 rounded-lg shadow-sm cursor-pointer bg-gray-200 bg-opacity-10"
+                        onClick={() => toggleProfessorAccordion(index, professor)}
+                     >
+                        <div className="flex items-center">
+                           {checkboxEnabled && (
+                              <input
+                                 type="checkbox"
+                                 className="mr-2"
+                                 disabled={!checkboxEnabled}
+                                 checked={checkboxState.get(professor) || false}
+                                 onChange={(e) => {
+                                    handleCheckboxChange(e.target.checked, professor);
+                                    toggleProfessorAccordion(index, professor);
+                                 }}
+                              />
+                           )}
+                           <div className="flex justify-between items-center flex-1 cursor-pointer">
+                              <h2 className="text-sm lg:text-lg font-semibold text-white">
+                                 {professor}
+                              </h2>
+                              <span className="text-gray-300">
+                                 {openProfessorAccordion === index ? "-" : "+"}
+                              </span>
+                           </div>
+                        </div>
+      
+                        {openProfessorAccordion === index && (
+                           <div 
+                              className="mt-2 bg-gray-200 bg-opacity-10 p-2 rounded-lg cursor-auto"
+                              onClick={(event) => event.stopPropagation()}
+                           >
+                              <SelectionDropdowns
+                                 selectedProfessor={professor}
+                                 selectedCourseSubject={null}
+                                 selectedYear={selectedYear}
+                                 setSelectedYear={setSelectedYear}
+                                 selectedSemester={selectedSemester}
+                                 setSelectedSemester={setSelectedSemester}
+                                 finalFilteredCourses={finalFilteredCourses}
+                                 selectedCourse={selectedCourse || ""}
+                                 selectedSection={selectedSection}
+                                 setSelectedSection={setSelectedSection}
+                                 years={years}
+                                 semesters={semesters}
+                              />
+                           </div>
                         )}
-                        <div className="flex justify-between items-center flex-1 cursor-pointer">
-                           <h2 className="text-sm lg:text-lg font-semibold text-white">
-                              {professor}
-                           </h2>
-                           <span className="text-gray-300">
-                              {openProfessorAccordion === index ? "-" : "+"}
-                           </span>
+                     </li>
+                  ))}
+               </ul>
+            ) : routeType === "professor" ? (
+               <ul className="space-y-4">
+                  {coursesToDisplay.map((course, index) => (
+                     <li
+                        key={index}
+                        className="p-4 rounded-lg shadow-sm cursor-pointer bg-gray-200 bg-opacity-10"
+                        onClick={() => toggleCourseAccordion(index, `${course.subject_id} ${course.course_number}`)}
+                     >
+                        <div className="flex items-center">
+                           <div className="flex justify-between items-center flex-1">
+                              <h2 className="text-lg font-semibold text-white">
+                                 {`${course.subject_id} ${course.course_number}`}
+                              </h2>
+                              <span className="text-gray-300">
+                                 {openCourseAccordion === index ? "-" : "+"}
+                              </span>
+                           </div>
                         </div>
-                     </div>
-
-                     {openProfessorAccordion === index && (
-                        <div 
-                           className="mt-2 bg-gray-200 bg-opacity-10 p-2 rounded-lg cursor-auto"
-                           onClick={(event) => event.stopPropagation()} // Ignore onClick event from course box
-                        >
-                           <SelectionDropdowns
-                              selectedProfessor={professor}
-                              selectedCourseSubject={null}
-                              selectedYear={selectedYear}
-                              setSelectedYear={setSelectedYear}
-                              selectedSemester={selectedSemester}
-                              setSelectedSemester={setSelectedSemester}
-                              finalFilteredCourses={finalFilteredCourses}
-                              selectedCourse={selectedCourse || ""}
-                              selectedSection={selectedSection}
-                              setSelectedSection={setSelectedSection}
-                              years={years}
-                              semesters={semesters}
-                           />
-                        </div>
-                     )}
-                  </li>
-               ))}
-            </ul>
-         ) : routeType === "professor" ? (
-            <ul className="space-y-4">
-               {coursesToDisplay.map((course, index) => (
-                  <li
-                     key={index}
-                     className="p-4 rounded-lg shadow-sm cursor-pointer bg-gray-200 bg-opacity-10"
-                     onClick={() =>
-                              toggleCourseAccordion(
-                                 index,
-                                 `${course.subject_id} ${course.course_number}`
-                              )
-                     }
-                  >
-                     <div className="flex items-center">
-                        <div
-                           className="flex justify-between items-center flex-1"
-                        >
-                           <h2 className="text-lg font-semibold text-white">
-                              {`${course.subject_id} ${course.course_number}`}
-                           </h2>
-                           <span className="text-gray-300">
-                              {openCourseAccordion === index ? "-" : "+"}
-                           </span>
-                        </div>
-                     </div>
-
-                     {openCourseAccordion === index && (
-                        <div 
-                           className="mt-4 bg-gray-200 bg-opacity-10 p-4 rounded-lg cursor-auto" 
-                           onClick={(event) => event.stopPropagation()} // Ignore onClick event from professor box
-                        >
-                           <SelectionDropdowns
-                              selectedProfessor={course.instructor1}
-                              selectedCourseSubject={course.subject_id}
-                              selectedYear={selectedYear}
-                              setSelectedYear={setSelectedYear}
-                              selectedSemester={selectedSemester}
-                              setSelectedSemester={setSelectedSemester}
-                              finalFilteredCourses={finalFilteredCourses}
-                              selectedCourse={selectedCourse || ""}
-                              selectedSection={selectedSection}
-                              setSelectedSection={setSelectedSection}
-                              years={years}
-                              semesters={semesters}
-                           />
-                        </div>
-                     )}
-                  </li>
-               ))}
-            </ul>
-         ) : null}
+      
+                        {openCourseAccordion === index && (
+                           <div 
+                              className="mt-4 bg-gray-200 bg-opacity-10 p-4 rounded-lg cursor-auto"
+                              onClick={(event) => event.stopPropagation()}
+                           >
+                              <SelectionDropdowns
+                                 selectedProfessor={course .instructor1}
+                                 selectedCourseSubject={course.subject_id}
+                                 selectedYear={selectedYear}
+                                 setSelectedYear={setSelectedYear}
+                                 selectedSemester={selectedSemester}
+                                 setSelectedSemester={setSelectedSemester}
+                                 finalFilteredCourses={finalFilteredCourses}
+                                 selectedCourse={selectedCourse || ""}
+                                 selectedSection={selectedSection}
+                                 setSelectedSection={setSelectedSection}
+                                 years={years}
+                                 semesters={semesters}
+                              />
+                           </div>
+                        )}
+                     </li>
+                  ))}
+               </ul>
+            ) : null}
+         </div>
       </div>
    );
 };

@@ -4,6 +4,7 @@ import SearchBar from "./components/SearchBar";
 import { BsQuestionCircle } from "react-icons/bs";
 import Link from "next/link";
 
+
 const poppins = Poppins({
   subsets: ["latin"],
   weight: ["400", "700"], // Specify weights you need
