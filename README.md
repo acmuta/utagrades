@@ -20,7 +20,7 @@ Coverage today: Fall 2020 through the 2024-2025 academic year (15+ semesters), r
 
 ## Architecture
 
-MavGrades is a single Next.js 14 (App Router) application. There is no separate backend service: API routes under `src/app/api` run as Next.js route handlers and query a SQLite database that ships inside the deployed app (`public/data/grades.sqlite`, `public/data/professors.db`). There is no user-facing database write path and no authentication — every request is a read against pre-built, static grade data.
+MavGrades is a single Next.js 14 (App Router) application. There is no separate backend service: API routes under `src/app/api` run as Next.js route handlers and query a SQLite database that ships inside the deployed app (`public/data/grades.sqlite`, `public/data/professors.db`). There is no user-facing database write path and no authentication: every request is a read against pre-built, static grade data.
 
 ```mermaid
 flowchart TB
@@ -45,7 +45,7 @@ flowchart TB
     UI --> SearchBar --> SearchAPI
     UI --> GradesAPI
     StatsCard --> ProfAPI
-    SearchAPI --> Cache
+    SearchAPI -->|"persistent connection\nPRAGMA cache_size/temp_store"| GradesDB
     GradesAPI --> Cache
     ProfAPI --> Cache
     Cache --> GradesDB
@@ -75,7 +75,7 @@ flowchart LR
 
 - **SQLite shipped inside the deployment artifact, not a hosted database.** The dataset (grade rows for 15+ semesters) is small and effectively read-only between data refreshes, so there is no separate database service to provision, pay for, or keep in sync. The tradeoff is that publishing new semester data means committing an updated `.sqlite` file and redeploying, not an out-of-band data load.
 - **One SQLite table per semester (`2024-fall`, `2025-spring`, ...) plus a denormalized `allgrades` table.** Per-semester tables keep single-semester queries small; `allgrades` (built by unioning all of them) backs "all time" search and comparison views. The route handlers pick a table (or `UNION ALL` several) based on the year/semester the caller asked for.
-- **Route-level LRU cache (`lru-cache`, 1000 entries, 1h TTL) in front of every API handler.** Query results are cached by full request URL inside each serverless function instance. This cuts repeat-query latency and SQLite load for popular courses/professors without needing a separate cache service, at the cost of the cache being cold per-lambda-instance and not shared across instances or deploys.
+- **Route-level LRU cache (`lru-cache`, 1000 entries, 1h TTL) in front of the `/api/grades` and `/api/professor-rating` handlers.** Query results are cached by full request URL inside each serverless function instance. This cuts repeat-query latency and SQLite load for popular courses/professors without needing a separate cache service, at the cost of the cache being cold per-lambda-instance and not shared across instances or deploys. `/api/courses/search` does not use this cache; it instead keeps a persistent SQLite connection with `PRAGMA cache_size = 10000` and `PRAGMA temp_store = MEMORY` set on it.
 - **Course GPA excludes P and R grades**, matching UTA's published grading policy (see the code comment/link in `csv_to_json.py`), after an explicit correction from an earlier version of the pipeline that included them.
 - **Professor identity is matched by normalized first/last name between UTA's instructor field and RMP**, not a stable ID, because UTA's export has no cross-reference to RMP. Ambiguous or unmatched names are recorded in a `skipped_profs` table rather than guessed.
 
@@ -90,7 +90,7 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:3000. The app runs entirely off the SQLite files already committed under `public/data/` — no environment variables or external services are required to run it locally.
+Open http://localhost:3000. The app runs entirely off the SQLite files already committed under `public/data/`, so no environment variables or external services are required to run it locally.
 
 To regenerate the SQLite database from raw CSVs after adding a new semester to `public/data/raw/`:
 
@@ -102,16 +102,16 @@ The RateMyProfessors scraper (`public/data/scrape_rmp.py`) is a separate, manual
 
 ## Usage
 
-- `npm run dev` — local dev server with Turbopack.
-- `npm run build` / `npm run start` — production build and serve.
-- `npm run lint` — Next.js/ESLint checks.
-- `npm run process` — regenerate `grades.sqlite` from `public/data/raw/*.csv`.
+- `npm run dev`: local dev server with Turbopack.
+- `npm run build` / `npm run start`: production build and serve.
+- `npm run lint`: Next.js/ESLint checks.
+- `npm run process`: regenerate `grades.sqlite` from `public/data/raw/*.csv`.
 
 API surface (all read-only, no auth):
-- `GET /api/courses/search?query=...` — type-ahead suggestions (courses + professors).
-- `GET /api/courses/search?course=...` or `?professor=...` — full section/grade rows for a course or professor.
-- `GET /api/grades?year=&semester=&subjectId=&instructor=&minGpa=&sort=&limit=...` — filtered, sorted, paginated grade query across one or more semester tables.
-- `GET /api/professor-rating?name=...` — RMP rating lookup for a single professor.
+- `GET /api/courses/search?query=...`: type-ahead suggestions (courses + professors).
+- `GET /api/courses/search?course=...` or `?professor=...`: full section/grade rows for a course or professor.
+- `GET /api/grades?year=&semester=&subjectId=&instructor=&minGpa=&sort=&limit=...`: filtered, sorted, paginated grade query across one or more semester tables.
+- `GET /api/professor-rating?name=...`: RMP rating lookup for a single professor.
 
 ## Testing
 
@@ -119,7 +119,7 @@ There is no automated test suite in this repository at the time of this refresh 
 
 ## Deployment
 
-Deployed on Vercel from the `main` branch (confirmed live, `server: Vercel`, HTTP 200 at the time of this refresh). `.github/pull.yml` auto-syncs `main` from an earlier upstream template repository (`lryanle:master`) with a hard reset rule; this repo has since diverged well beyond that template. There is no GitHub Actions CI in the repository; linting/build checks are whatever Vercel's own build step enforces on deploy.
+Deployed on Vercel from the `main` branch (confirmed live, `server: Vercel`, HTTP 200 at the time of this refresh). `.github/pull.yml` defines a hard-reset rule that targets a `master` base on an earlier upstream template repository (`lryanle:master`); that is a separate branch from this repo's current `main` default, and this repo has since diverged well beyond that template, so treat the rule as stale rather than as an active auto-sync of `main`. There is no GitHub Actions CI in the repository; linting/build checks are whatever Vercel's own build step enforces on deploy.
 
 ## Known limitations
 
@@ -133,7 +133,7 @@ Deployed on Vercel from the `main` branch (confirmed live, `server: Vercel`, HTT
 
 MavGrades is a project of the [Association for Computing Machinery at UT Arlington (ACM @ UTA)](https://acmuta.com), built and maintained by a rotating group of student contributors. Contributor history (`git shortlog`) shows sustained work from Kevin Farokhrouz, Atiqur Rahman, and Talha Tahmid, alongside contributions from Md Rashidul Alam Sami, Devrat Patel, Vincent Dang, Md Ahanaful Alam, Parmesh Walunj, Muhammad Hunain Khurram, and others across ACM UTA's project team.
 
-`PLACEHOLDER — needs owner confirmation`: git history in this repository shows no commits authored by Prajit Viswanadha; if he has a role on this project (org maintainer, reviewer, data-request coordinator, etc. that doesn't show up as a commit), that should be added here explicitly rather than implied.
+`PLACEHOLDER, needs owner confirmation`: git history in this repository shows no commits authored by Prajit Viswanadha; if he has a role on this project (org maintainer, reviewer, data-request coordinator, etc. that doesn't show up as a commit), that should be added here explicitly rather than implied.
 
 ## License
 
